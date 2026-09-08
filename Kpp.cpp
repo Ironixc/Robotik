@@ -4,116 +4,250 @@
 #include <string>
 
 using namespace std;
-string Move_direction[] = {"Left", "Right", "Down", "Up"};
-vector<string> Path = {};
-
-int Move_Vertical[] = {0, 0, 1, -1};
-int Move_Horizontal[] = {-1, 1, 0, 0};
-int Moves = 0;
 
 struct Location
 {
-    int VerticalPoint;
-    int HorizontalPoint;
-    int Count;
-    vector<string> direction;
+    int VP, HP, M;    // VP = Vertical Point, HP = Horizontal Point, M = Moves
+    vector<string> D; // D = Direction
 };
 
-void FindF(vector<vector<string>> &layout, int &StartPointVertical, int &StartPointHorizontal)
+class Maze
 {
-    int Vertical = layout.size();
-    int Horizontal = layout[0].size();
+private:
+    vector<vector<char>> L; // L = Layout
+    int CV = 1, CH = 1;     // SV = Start Vertical, SH = Start Horizontal, TM = Total Moves
 
-    vector<vector<bool>> Visited(Vertical, vector<bool>(Horizontal, false));
-    queue<Location> R; // R = Robot/Possition
-    R.push({StartPointVertical,StartPointHorizontal , 0, {}});
-    Visited[StartPointVertical][StartPointHorizontal] = true;
-    while (R.size() != 0)
+public:
+    Maze(vector<vector<char>> Layout)
     {
-        Location Now = R.front();
-        R.pop();
-        if (layout[Now.VerticalPoint][Now.HorizontalPoint] == "F")
+        L = Layout;
+    }
+
+    vector<vector<char>> getL() { return L; }
+    int getV() { return CV; }
+    int getH() { return CH; }
+
+    vector<string> TF, TG; // TF = To Flag, TG = To Goal
+    void UP(int v, int h)
+    { // Update Possiton
+        CV = v;
+        CH = h;
+    }
+};
+
+class BFS
+{
+private:
+    int MV[4] = {0, 0, 1, -1};                      // MV = Move Vertical
+    int MH[4] = {-1, 1, 0, 0};                      // MH = Move Horizontal
+    string MD[4] = {"Left", "Right", "Down", "Up"}; // MD = Move Direction
+    void findExit(Maze &Maze, char Target, int &TM, vector<string> &TP)
+    {
+        vector<vector<char>> L = Maze.getL();
+        int V = L.size();
+        int H = L[0].size();
+        int SV = Maze.getV();
+        int SH = Maze.getH();
+
+        vector<vector<bool>> visited(V, vector<bool>(H, false));
+        queue<Location> R;
+        R.push({SV, SH, 0, {}});
+        visited[SV][SH] = true;
+        while (R.size() != 0)
         {
-            Moves = Now.Count;
-            StartPointHorizontal = Now.HorizontalPoint;
-            StartPointVertical = Now.VerticalPoint;
-            Path = Now.direction;
-            return;
-        }
-        for (int i = 0; i < 4; i++)
-        {
-            int newVertical = Now.VerticalPoint + Move_Vertical[i];
-            int newHorizontal = Now.HorizontalPoint + Move_Horizontal[i];
-            if (newVertical >= 0 && newHorizontal >= 0 && newVertical < Vertical && newHorizontal < Horizontal && layout[newVertical][newHorizontal] != "#" && layout[newVertical][newHorizontal] != "B" && Visited[newVertical][newHorizontal] == false)
+            Location Now = R.front();
+            R.pop();
+            if (L[Now.VP][Now.HP] == Target)
             {
-                Visited[newVertical][newHorizontal] = true;
-                vector<string> NewPath = Now.direction;
-                NewPath.push_back(Move_direction[i]);
-                R.push({newVertical, newHorizontal, Now.Count + 1, NewPath});
+                TM += Now.M;
+                Maze.UP(Now.VP, Now.HP);
+                for (int i = 0; i < Now.D.size(); i++)
+                {
+                    TP.push_back(Now.D[i]);
+                }
+                return;
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                int newVertical = Now.VP + MV[i];
+                int newHorizontal = Now.HP + MH[i];
+
+                if (newVertical >= 0 && newHorizontal >= 0 && newVertical < V && newHorizontal < H && L[newVertical][newHorizontal] != '#' && L[newVertical][newHorizontal] != 'X' && visited[newVertical][newHorizontal] == false)
+                {
+                    visited[newVertical][newHorizontal] = true;
+                    vector<string> NewPath = Now.D;
+                    NewPath.push_back(MD[i]);
+                    R.push({newVertical, newHorizontal, Now.M + 1, NewPath});
+                }
             }
         }
     }
-}
 
-void FindE(vector<vector<string>> &layout, int &StartPointVertical, int &StartPointHorizontal)
-{
-    int Vertical = layout.size();
-    int Horizontal = layout[0].size();
-
-    vector<vector<bool>> Visited(Vertical, vector<bool>(Horizontal, false));
-    queue<Location> R; // R = Robot/Possition
-    R.push({StartPointVertical, StartPointHorizontal, 0, Path});
-
-    while (R.size() != 0)
+public:
+    void find(Maze Maze)
     {
-        Location Now = R.front();
-        R.pop();
-        if (layout[Now.VerticalPoint][Now.HorizontalPoint] == "E")
+        int TM = 0;
+        vector<string> TPF;
+        vector<string> TPG;
+
+        cout << "Map Loaded :" << endl;
+        cout << "Start Possition : (1,1)" << endl;
+
+        findExit(Maze, 'F', TM, TPF);
+        cout << "Path To Flag :";
+        for (int i = 0; i < TPF.size(); i++)
         {
-            Moves += Now.Count;
-            StartPointHorizontal = Now.HorizontalPoint;
-            StartPointVertical = Now.VerticalPoint;
-            Path = Now.direction;
-            return;
-        }
-        for (int i = 0; i < 4; i++)
-        {
-            int newVertical = Now.VerticalPoint + Move_Vertical[i];
-            int newHorizontal = Now.HorizontalPoint + Move_Horizontal[i];
-            if (newVertical >= 0 && newHorizontal >= 0 && newVertical < Vertical && newHorizontal < Horizontal && layout[newVertical][newHorizontal] != "#" && layout[newVertical][newHorizontal] != "B" && Visited[newVertical][newHorizontal] == false)
+            cout << TPF[i];
+            if (i == TPF.size() - 1)
             {
-                Visited[newVertical][newHorizontal] = true;
-                vector<string> NewPath = Now.direction;
-                NewPath.push_back(Move_direction[i]);
-                R.push({newVertical, newHorizontal, Now.Count + 1, NewPath});
+                //do nothing
+            }
+            else
+            {
+                cout << " --> ";
             }
         }
+        cout << endl;
+        cout << "Flag Capture : (" << Maze.getV() << "," << Maze.getH() << ")" << endl;
+
+        findExit(Maze, 'G', TM, TPG);
+        cout << "Path To Base :";
+        for (int i = 0; i < TPG.size(); i++)
+        {
+            cout << TPG[i];
+             if (i == TPG.size() - 1)
+            {
+                //do nothing
+            }
+            else
+            {
+                cout << " --> ";
+            }
+        }
+        cout << endl;
+        cout << "Base Reached : (" << Maze.getV() << "," << Maze.getH() << ")" << endl;
+        cout << TM;
     }
-} 
+};
 
 int main()
 {
-    vector<vector<string>> layout = {
-        {"#", "#", "#", "#", "#", "#", "#"},
-        {"#", "S", "#", "B", ".", "#", "#"},
-        {"#", ".", ".", ".", "F", ".", "#"},
-        {"#", ".", ".", ".", ".", ".", "#"},
-        {"#", ".", "#", "#", ".", "E", "#"},
-        {"#", "#", "#", "#", "#", "#", "#"}
-    };
-    int StartPointVertical = 1;
-    int StartPointHorizontal = 1;
+    int a;
+    vector<vector<char>> layout1 = {
+        {
+            '#',
+            '#',
+            '#',
+            '#',
+            '#',
+            '#',
+            '#',
+        },
+        {
+            '#',
+            'S',
+            '#',
+            '.',
+            '.',
+            '.',
+            '#',
+        },
+        {
+            '#',
+            '.',
+            '#',
+            '.',
+            '#',
+            'G',
+            '#',
+        },
+        {
+            '#',
+            '.',
+            '.',
+            '.',
+            '#',
+            '.',
+            '#',
+        },
+        {
+            '#',
+            '#',
+            '#',
+            '.',
+            '.',
+            '.',
+            '#',
+        },
+        {
+            '#',
+            'X',
+            '.',
+            '.',
+            'F',
+            '.',
+            '#',
+        },
+        {
+            '#',
+            '#',
+            '#',
+            '#',
+            '#',
+            '#',
+            '#',
+        }};
 
-    FindF(layout, StartPointVertical, StartPointHorizontal);
-    cout << Moves << StartPointHorizontal << StartPointVertical << endl;
-    for (int i = 0; i < Path.size(); i++)
+    vector<vector<char>> layout2 = {
+        {'#', '#', '#', '#', '#', '#', '#', '#', '#'},
+        {'#', 'S', '.', '.', '#', '.', '.', '.', '#'},
+        {'#', '.', '#', '.', '#', '.', '#', 'G', '#'},
+        {'#', '.', '#', '.', '.', '.', '#', '.', '#'},
+        {'#', '.', '.', '.', '#', '.', '.', '.', '#'},
+        {'#', '#', '#', '.', '#', '.', '.', '#', '#'},
+        {'#', 'X', '.', '.', '#', '.', '.', 'F', '#'},
+        {'#', '.', '#', '#', '#', 'X', '.', '.', '#'},
+        {'#', '#', '#', '#', '#', '#', '#', '#', '#'}};
+
+    vector<vector<char>> layout3 = {
+        {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
+        {'#', 'S', '.', '.', '#', '.', '.', '.', '.', '.', '#'},
+        {'#', '.', '#', '.', '#', '.', '#', '#', '#', '.', '#'},
+        {'#', '.', '#', '.', '.', '.', '#', 'G', '#', '.', '#'},
+        {'#', '.', '.', '.', '#', '.', '#', '.', '#', '.', '#'},
+        {'#', '#', '#', '.', '#', '.', '.', '.', '#', '.', '#'},
+        {'#', '.', '.', '.', '#', '#', '#', '.', '#', '.', '#'},
+        {'#', '.', '#', '.', '.', 'X', '.', '.', '#', '.', '#'},
+        {'#', '.', '#', '.', '#', '#', '#', '.', '#', 'F', '#'},
+        {'#', 'X', '.', '.', '.', '.', 'X', '.', '.', '.', '#'},
+        {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'}};
+
+    BFS b;
+    cout << "Which Maze (1-3)";
+
+    scanf("%d", &a);
+    switch (a)
     {
-        cout << Path[i] << "-->";
+    case 1:
+    {
+        Maze maze1(layout1);
+        b.find(maze1);
+        break;
     }
-    FindE(layout, StartPointVertical, StartPointHorizontal);
-    cout << Moves << StartPointHorizontal << StartPointVertical;
-    for (int i = 0; i < Path.size(); i++)
+    case 2:
     {
-        cout << Path[i] << "-->";
+        Maze maze1(layout2);
+        b.find(maze1);
+        break;
+    }
+    case 3:
+    {
+        Maze maze1(layout3);
+        b.find(maze1);
+        break;
+    }
+    default:
+        cout << "Salah Input";
+        break;
     }
 }
