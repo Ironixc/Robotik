@@ -136,17 +136,17 @@ public: // public every class can access this variable or fuction
         TP.insert(TP.end(), TPF.begin(), TPF.end()); // Get all TPF direction begin to end in TP from the back
         TP.insert(TP.end(), TPG.begin(), TPG.end()); // Get all TPF direction begin to end in TP from the back
 
-        return TP; //....
+        return TP; //return the full step so the Visialisation can get the variable (or the finalpath so it have varibale)
     }
 };
 
 class Visualisation // Visualisation how the Robot will move from S to F to G
 {
 private:
-    void Map(vector<vector<char>> L, int V, int H)//....
+    void Map(vector<vector<char>> L, int V, int H)// getting the map Vertivcal and Horizontal Point
     {
-        L[V][H] = 'R';
-        for (auto &row : L)
+        L[V][H] = 'R';// Change the tile maze if the robot is at that location 
+        for (auto &row : L)// looping for getting the map of the maze with the 'R'
         {
             for (char cell : row)
             {
@@ -164,14 +164,14 @@ public:
         vector<vector<char>> L = Maze.getL(); // Get the maze size or what maze this is
         int CV = 1; //start point always 1
         int CH = 1; //start point always 1
-        Map(L, CV, CH);
-        for (int i = 0; i < fullPath.size(); i++)
+        Map(L, CV, CH); // for the start of the maze
+        for (int i = 0; i < fullPath.size(); i++)// loop until the the fullpath is do
         {
             cout << "Press Enter\n";
             cout << "---------------------------------\n";
 
-            cin.get();
-
+            cin.get();// User Input need to pressed enter so it continue to the next step
+            //Check what is the string in the fullpath index then covert the string like left to CH--; because CH-- is left in the logic
             if (fullPath[i] == "Left")
                 CH--;
             else if (fullPath[i] == "Right")
@@ -181,7 +181,7 @@ public:
             else if (fullPath[i] == "Down")
                 CV++;
 
-            Map(L, CV, CH);//Print the map
+            Map(L, CV, CH);// check the maze, where is the updated Vertical and Horizontal point and get 3 of that to the fuction map
         }
     }
 };
@@ -222,13 +222,10 @@ int main()
         {'#', 'X', '.', '.', '.', '.', 'X', '.', '.', '.', '#'},
         {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'}}; // maze layout3
 
-    Maze maze1(layout1);
-    Maze maze2(layout2);
-    Maze maze3(layout3);
-    Visualisation vis;
-    vector<string> finalPath;
-    Maze selectedMaze = maze1;
-    BFS b;
+    Maze selectedMaze = layout1; //
+    BFS b;// 
+    Visualisation vis; //   
+    vector<string> finalPath; //New variable to 
 
     cout << "Which Maze (1-3) : ";
     cin >> a;
@@ -241,12 +238,12 @@ int main()
     }
     case 2:
     {
-        selectedMaze = maze2;//change the maze to 2 if user input 2
+        selectedMaze = layout2;//change the maze to 2 if user input 2
         break;
     }
     case 3:
     {
-        selectedMaze = maze3;//change the maze to 3 if user input 3
+        selectedMaze = layout3;//change the maze to 3 if user input 3
         break;
     }
     default:
