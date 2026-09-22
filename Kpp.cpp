@@ -222,10 +222,10 @@ int main()
         {'#', 'X', '.', '.', '.', '.', 'X', '.', '.', '.', '#'},
         {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'}}; // maze layout3
 
-    Maze selectedMaze = layout1; //
-    BFS b;// 
-    Visualisation vis; //   
-    vector<string> finalPath; //New variable to 
+    Maze selectedMaze = layout1; //new variable to hold the user input what maze is it
+    BFS b;//to call the BFS fuction or class
+    Visualisation vis; //to call the Visualisation fuction or class
+    vector<string> finalPath; //New variable to get the total path from TP
 
     cout << "Which Maze (1-3) : ";
     cin >> a;
@@ -250,17 +250,18 @@ int main()
         cout << "Salah Input";// if it not 1-3
         break;
     }
-    finalPath = b.find(selectedMaze);//
+    finalPath = b.find(selectedMaze);//call the find fuction in BFS to solve the maze and get the TP to finalPath
     cout << "---------------------------------\n";
     cout << "Type 1 for robot visualisation : ";
     cin >> a;
-    if (a == 1)
+    if (a == 1)//if the user want Visualisation press if not then ok
     {
-        vis.Visual(selectedMaze, finalPath);
+        vis.Visual(selectedMaze, finalPath);// call the Visual fuction with the selected maze (user input the maze at the start) and
+        //final path that we got from (BFS find)
     }
     else
     {
-        cout << "";
+        cout << "ok";
     }
     return 0;
 }
